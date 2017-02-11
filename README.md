@@ -41,7 +41,10 @@ Bella is a robust, `pure python`, post-exploitation and remote administration to
 
 16. `VERY comprehensive data storage.` All information that Bella discovers [tokens, passwords, etc] is stored in an encrypted SQL database on the computer running Bella. This information is used for faster function execution, and a "smarter" reverse shell.
 	
-17. `A lot of other great features!` Mess around with it to see it in action.
+17. `Complete remote removal of Bella`
+
+18. `A lot of other great features!` Mess around with it to see it in action.
+
 
 
 These are some of the features available when we are in the userland. This shell is accessible at any time when the user has an internet connection, which occurs when they are logged in and the computer is not asleep. 
@@ -110,6 +113,8 @@ Please let me know if you have any issues.
 `https://github.com/semaja2/InsomniaX`
 
 `https://github.com/stweil/OSXvnc`
+
+`https://bugs.chromium.org/p/project-zero/issues/detail?id=676&redir=1`
 
 
 ###TODO

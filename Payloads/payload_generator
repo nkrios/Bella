@@ -1,3 +1,5 @@
+#Mach race shell https://bugs.chromium.org/p/project-zero/issues/detail?id=676&redir=1
+
 echo 'Generating payloads!'
 
 base64 vnc > payloads.txt
