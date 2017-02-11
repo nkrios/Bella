@@ -88,6 +88,8 @@ The Control Center will constantly update this selection, for up to 128 separate
 
 **Little note**: Bella works across the internet, if you do some configuration. Configure your firewall to forward Bella's port to your Control Center. Other important ports to forward:
 	1) VNC - 5500. 2) Microphone - 2897. 3) MITM - 8081
+	
+Also, VNC relies on the RealVNC application for macOS, as it is one of the few clients that supports a reverse VNC connection. It is free to download and use.
 
 ##Other Information
 This project is being **actively** maintained. Please submit any and all bug reports, questions, feature requests, or related information.

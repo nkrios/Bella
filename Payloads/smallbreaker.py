@@ -22,7 +22,6 @@ from sys import exit
 import struct
 from binascii import unhexlify
 import datetime
-from hexdump import hexdump 
 from ctypes import *
 import sha
 import hmac
@@ -1566,7 +1565,6 @@ class KeyChain():
         # now the real key gets found. */
         plain = kcdecrypt(dbkey, iv, revplain)
 
-        #hexdump(plain)
         Keyname = plain[:12]    # Copied Buffer when user click on right and copy a key on Keychain Access
         keyblob = plain[12:]
 
