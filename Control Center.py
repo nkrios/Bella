@@ -595,7 +595,7 @@ def main():
                 clear()
                 if v[0] == 54:
                     subprocess_cleanup(subprocess_list)
-                    print "%s%sBroken pipe." % (red, bold, endC)
+                    print "%s%sBroken pipe.%s" % (red, bold, endC)
                     exit()
 
 if __name__ == '__main__':

