@@ -73,18 +73,20 @@ Upon gaining root access, Bella will migrate over to a hidden directory in /Libr
 
 **Bella**'s `power` lies in its high level of automation of most of the painstaking tasks that one faces in a post-exploitation scenario. It is incredibly easy to **setup and use**, requires no pre-configuration on the target, and very little configuration on the Control Center. It leverages the *incredible* behind the scenes power of macOS and Python for a fluid post-exploitation experience.
 
-1. Download / clone this repository.
+1. Download / clone this repository onto a macOS or Linux system.
 
 2. Run ./BUILDER and enter the appropriate information. It should look something like this:
 ![](Screenshots/Builder.png)
 3. That's it! Bella is all ready to go. Just upload and execute `Bella` on your macOS target.
-4. Now run `Control Center.py` on your macOS control center. It requires no-dependencies [except for mitmproxy if you want to MITM]. It will do some auto-configuration, and you will see something like this after a few seconds.
+4. Now run `Control Center.py` on your macOS or Linux control center. It requires no-dependencies [except for mitmproxy if you want to MITM]. It will do some auto-configuration, and you will see something like this after a few seconds.
 ![](Screenshots/Found Clients.png)
 The Control Center will constantly update this selection, for up to 128 separate computers.
 5. Press `Ctrl-C` to choose from the selection, and then type in the number of the computer that you want. You will then be presented with a screen like this.
 ![](Screenshots/Command entry.png)
 6. Start running commands! `bella_info` is a great one. Run `manual` to get a full manual of all of the commands. Also, you can hit tab twice to see a list of available commands.
 ![](Screenshots/Bella Info.png)
+
+**VERY IMPORTANT DISCLAIMER: USE BELLA RESPONSIBLY. BY USING BELLA YOU AGREE TO THE MIT LICENSE CONTAINED IN THIS REPOSITORY. READ THE LICENSE BEFORE USING BELLA.** 
 
 **Little note**: Bella works across the internet, if you do some configuration. Configure your firewall to forward Bella's port to your Control Center. Other important ports to forward:
 	1) VNC - 5500. 2) Microphone - 2897. 3) MITM - 8081
@@ -120,7 +122,6 @@ Please let me know if you have any issues.
 
 
 ###TODO
-1. `Control Center support for Linux` [shouldn't take too much tweaking]
 
 1. `Reverse SOCKS proxy to tunnel our traffic through the server.`
 
