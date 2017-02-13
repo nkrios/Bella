@@ -29,7 +29,7 @@ if [[ -z "$port" ]]; then
 fi
 
 echo -e '\033[92mConfiguring your Bella installation\033[0m'
-if [[ "$unamestr" == 'Darwin' ]]; then #macOS
+if [[ `uname` == 'Darwin' ]]; then #macOS
 	sed -i '' -e "s@com.apple.Bella@$launchagent@" $BuildsPath/bella.py 
 	sed -i '' -e "s@Containers/.bella@$helperLoc@" $BuildsPath/bella.py 
 	sed -i '' -e "s@4545@$port@" $BuildsPath/bella.py 
