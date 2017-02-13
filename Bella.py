@@ -1865,7 +1865,7 @@ def bella(*Emma):
 				elif data == "reboot_server":
 					send_msg(os.kill(bellaPID, 9), True)
 				elif data == "current_users":
-					send_msg('\001\033[4mCurrently logged in users:\033[0m\002\n%s' % check_current_users(), True)
+					send_msg('\033[4mCurrently logged in users:\033[0m\n%s' % check_current_users(), True)
 				elif data == "bella_info":
 					bella_info()
 				elif data == "get_root":
@@ -2109,20 +2109,20 @@ def bella(*Emma):
 			pass
 
 ##### Below variables are global scopes that are accessed by most of the methods in Bella. Should make a class structure #####
-endANSI = '\001\033[0m\002'
-bold = '\001\033[1m\002'
-underline = '\001\033[4m\022'
-red_minus = '\001\033[31m\002[-] %s' % endANSI
-greenPlus = '\001\033[92m\002[+] %s' % endANSI
-blue_star = '\001\033[94m\002[*] %s' % endANSI
-yellow_star = '\001\033[93m\002[*] %s' % endANSI
-violet = '\001\033[95m\002'
-blue = '\001\033[94m\002'
-light_blue = '\001\033[34m\002'
-green = '\001\033[92m\002'
-dark_green = '\001\033[32m\002'
-yellow = '\001\033[93m\002'
-red = '\001\033[31m\002'
+endANSI = '\033[0m'
+bold = '\033[1m'
+underline = '\033[4m'
+red_minus = '\033[31m[-] %s' % endANSI
+greenPlus = '\033[92m[+] %s' % endANSI
+blue_star = '\033[94m[*] %s' % endANSI
+yellow_star = '\033[93m[*] %s' % endANSI
+violet = '\033[95m'
+blue = '\033[94m'
+light_blue = '\033[34m'
+green = '\033[92m'
+dark_green = '\033[32m'
+yellow = '\033[93m'
+red = '\033[31m'
 bella_error = ''
 cryptKey = 'edb0d31838fd883d3f5939d2ecb7e28c'
 try:

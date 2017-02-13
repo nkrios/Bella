@@ -10,21 +10,21 @@ except ImportError:
     import readline
     macOS_rl = True
 
-violet = '\001\033[95m\002'
-blue = '\001\033[94m\002' #94 for original light blue
-lightBlue = '\001\033[34m\002'
-green = '\001\033[92m\002' #32 for a little darker
-darkGreen = '\001\033[32m\002'
-yellow = '\001\033[93m\002'
-red = '\001\033[31m\002'
-endC = '\001\033[0m\002'
-bold = '\001\033[1m\002'
-italics = '\001\033[3m\002'
-underline = '\001\033[4m\002'
-ps1Green = '\001\033[1;32m\022'
-offGreen = '\001\033[36m\002' #light blue lol
-offBlue = '\001\033[38;5;148m\002'
-purple = '\001\033[0;35m\002'
+violet = '\033[95m'
+blue = '\033[94m' #94 for original light blue
+lightBlue = '\033[34m'
+green = '\033[92m' #32 for a little darker
+darkGreen = '\033[32m'
+yellow = '\033[93m'
+red = '\033[31m'
+endC = '\033[0m'
+bold = '\033[1m'
+italics = '\033[3m'
+underline = '\033[4m'
+ps1Green = '\033[1;32m\022'
+offGreen = '\033[36m' #light blue lol
+offBlue = '\033[38;5;148m'
+purple = '\033[0;35m'
 redX = "%s[x] %s" % (red, endC)
 greenCheck = "%s[+] %s" % (green, endC)
 bluePlus = "%s[*] %s" % (blue, endC)
@@ -421,8 +421,12 @@ def main():
                    
                     workingdirFormatted = blue + workingdir + endC
                     if macOS_rl:
-                        readline.parse_and_bind("bind ^I rl_complete")
-                        readline.set_completer(tab_parser)
+                        if platform.system() == "Linux":
+                            readline.parse_and_bind("tab: complete")
+                            readline.set_completer(tab_parser)
+                        else:
+                            readline.parse_and_bind("bind ^I rl_complete")
+                            readline.set_completer(tab_parser)
                     else:
                         gnureadline.parse_and_bind("tab: complete")
                         gnureadline.set_completer(tab_parser)
